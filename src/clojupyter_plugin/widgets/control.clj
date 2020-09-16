@@ -15,7 +15,7 @@
         set-value! (fn [] (swap! output-widget assoc :value (f @cur)))]
     (doseq [[k w] wmap]
       (assert (ca/comm-atom? w))
-      (ca/watch w agent-key
+      (add-watch w agent-key
                 (fn [_ _ _ new]
                   (try (swap! cur assoc k (get new :value))
                        (set-value!)
@@ -29,7 +29,7 @@
   [f w0 & ws]
   (let [widgs (vec (cons w0 ws))
         out (widget/label {:value (str (apply f (map (comp :value deref) widgs)))})
-        observe! (fn [idx] (ca/watch (nth widgs idx) :value
+        observe! (fn [idx] (add-watch (nth widgs idx) :value
                               (fn [k _ {o-val :value} {n-val :value}]
                                 (when (not= o-val n-val)
                                   (let [v (apply f (map #(if (= %1 idx) n-val (get @%2 :value)) (range) widgs))]

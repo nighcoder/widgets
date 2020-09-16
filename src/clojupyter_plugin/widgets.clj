@@ -3,7 +3,7 @@
 It uses the json to produce default value maps, widget names, specs and constructors"
   (:require [camel-snake-kebab.core :as csk]
             [clojure.java.io :as io]
-            [clojure.data.json :as json]
+            [cheshire.core :as json]
             [clojupyter.kernel.comm-atom :as ca]
             [clojupyter.state :as state]
             [clojupyter.util-actions :as u!]
@@ -18,7 +18,7 @@ It uses the json to produce default value maps, widget names, specs and construc
 (def- SPECS (-> "ipywidgets/schema/jupyterwidgetmodels.min.json"
                 io/resource
                 slurp
-                json/read-str))
+                json/parse-string))
 
 (def- REPLACEMENTS {"b''" (byte-array 0)})
 
@@ -63,8 +63,6 @@ It uses the json to produce default value maps, widget names, specs and construc
   (every? (set (range (count _options_labels))) index))
 
 (def widget? ca/comm-atom?)
-(def open? ca/open?)
-(def closed? ca/closed?)
 
 ;;------------------------------------------------------------------------------------------
 ;; Special handling of selection widgets
@@ -160,8 +158,8 @@ It uses the json to produce default value maps, widget names, specs and construc
            (swap! widget value-from-index)
            (when (:value @widget)
              (swap! widget index-from-value)))
-         (ca/watch widget :internal-consistency selection-watcher))
-       (ca/validate widget
+         (add-watch widget :internal-consistency selection-watcher))
+       (set-validator! widget
          (condp contains? w-name
             #{'bounded-float-text 'bounded-int-text 'float-progress
               'float-slider 'int-slider 'int-progress 'play}        (every-pred valid-spec? min<=val<=max? min<max?)
@@ -280,7 +278,7 @@ It uses the json to produce default value maps, widget names, specs and construc
                       (when (seq (str stderr#))
                         (swap! ~w update :outputs conj {:output_type "stream" :name "stderr" :text (str stderr#)}))))]
          (try (swap! ~w update :outputs conj {:output_type "display_data" :metadata {}
-                                              :data (json/read-str (.to-mime res#))})
+                                              :data (json/parse-string (.to-mime res#))})
               res#
            (catch Exception e# res#))))))
 
