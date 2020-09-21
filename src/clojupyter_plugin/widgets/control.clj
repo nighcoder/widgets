@@ -23,19 +23,19 @@
                          (log/error (str "Error in interactive-agent@" agent-key ": " e)
                                     (log/ppstr {:cur @cur :k k :new new})))))))
     (set-value!)
-    (widget/v-box {:children (vec (concat (vals wmap) [output-widget]))})))
+    (widget/v-box :children (vec (concat (vals wmap) [output-widget])))))
 
 (defn interact!
   [f w0 & ws]
   (let [widgs (vec (cons w0 ws))
-        out (widget/label {:value (str (apply f (map (comp :value deref) widgs)))})
+        out (widget/label :value (str (apply f (map (comp :value deref) widgs))))
         observe! (fn [idx] (add-watch (nth widgs idx) :value
                               (fn [k _ {o-val :value} {n-val :value}]
                                 (when (not= o-val n-val)
                                   (let [v (apply f (map #(if (= %1 idx) n-val (get @%2 :value)) (range) widgs))]
                                     (swap! out assoc :value (str v)))))))]
     (doseq [i (range (count widgs))] (observe! i))
-    (widget/v-box {:children (conj widgs out)})))
+    (widget/v-box :children (conj widgs out))))
 
 (defn tie!
   ([f source target] (tie! f source target :value :value))

@@ -131,45 +131,47 @@ It uses the json to produce default value maps, widget names, specs and construc
                  (= "Model" (subs name (- (count name) 5) (count name)))))
     (csk/->kebab-case-symbol (subs name 0 (- (count name) 5)))))
 
-(defn- make-widget
+(defn make-widget
   "Returns a fn that builds and returns a widget of type defined by spec.
   spec is a map of attributes that define de widget."
   [spec]
   (fn constructor
-    ([] (constructor {}))
-    ([state-map]
-     (let [{jup :jup req-msg :req-message} (state/current-context)]
-       (constructor jup req-msg WIDGET-TARGET (u!/uuid) state-map)))
-    ([jup req-msg target comm-id]
-     (constructor jup req-msg target comm-id {}))
-    ([jup req-msg target comm-id state-map]
-     (let [{d-index :index :as d-widget} (def-widget spec)
-           viewer-keys (set (keys d-widget))
-           w-name (widget-name spec)
-           full-k (keyword "clojupyter-plugin.widgets" (str w-name))
-           widget (ca/create jup req-msg target comm-id viewer-keys (merge (with-meta d-widget {:spec full-k}) state-map))
-           valid-spec? (partial s/valid? full-k)]
-      ;; When widget is a selector, we need to sync :options, _options_values, _options_labels, :index and :value
-      ;; We manage that by attaching a watcher fn to keep them in sync
-       (when (#{'dropdown 'radio-buttons 'select 'selection-slider 'selection-range-slider 'toggle-buttons 'select-multiple}
-               w-name)
-         (swap! widget expand-options)
-         (if (not= d-index (:index @widget))
-           (swap! widget value-from-index)
-           (when (:value @widget)
-             (swap! widget index-from-value)))
-         (add-watch widget :internal-consistency selection-watcher))
-       (set-validator! widget
-         (condp contains? w-name
-            #{'bounded-float-text 'bounded-int-text 'float-progress
-              'float-slider 'int-slider 'int-progress 'play}        (every-pred valid-spec? min<=val<=max? min<max?)
-            #{'float-range-slider 'int-range-slider}                (every-pred valid-spec? valid-value-pair? min<max?)
-            #{'dropdown 'selection-slider 'select}                  (every-pred valid-spec? valid-index?)
-            #{'select-multiple}                                     (every-pred valid-spec? valid-indicies?)
-            #{'selection-range-slider}                              (every-pred valid-spec? valid-index-range?)
-            #{'float-log-slider}                                    (every-pred valid-spec? valid-exp-value? min<max?)
-            valid-spec?))
-       (ca/insert widget)))))
+    [& {:as args}]
+    (let [{d-index :index :as d-state} (def-widget spec)
+          w-name (widget-name spec)
+          full-k (keyword "clojupyter-plugin.widgets" (str w-name))
+          valid-spec? (partial s/valid? full-k)
+          base (ca/base-widget d-state)]
+      (swap! base merge args)
+      (when (#{'dropdown 'radio-buttons 'select 'selection-slider 'selection-range-slider 'toggle-buttons 'select-multiple} w-name)
+        (swap! base expand-options)
+        (if (not= d-index (:index @base))
+          (swap! base value-from-index)
+          (when (:value @base)
+            (swap! base index-from-value)))
+        (add-watch base :internal-consistency selection-watcher))
+      (set-validator! base
+        (condp contains? w-name
+          #{'bounded-float-text 'bounded-int-text 'float-progress 'float-slider 'int-slider 'int-progress 'play}
+          (every-pred valid-spec? min<=val<=max? min<max?)
+
+          #{'float-range-slider 'int-range-slider}
+          (every-pred valid-spec? valid-value-pair? min<max?)
+
+          #{'dropdown 'selection-slider 'select}
+          (every-pred valid-spec? valid-index?)
+
+          #{'select-multiple}
+          (every-pred valid-spec? valid-indicies?)
+
+          #{'selection-range-slider}
+          (every-pred valid-spec? valid-index-range?)
+
+          #{'float-log-slider}
+          (every-pred valid-spec? valid-exp-value? min<max?)
+
+          valid-spec?))
+      base)))
 
 (defn- spec-widget!
   "Defines the specs for widgets interpreted from the spec map."
@@ -254,14 +256,6 @@ It uses the json to produce default value maps, widget names, specs and construc
                w-cons (make-widget spec)]
            (eval `(def ~w-name ~w-cons))
            (spec-widget! spec))))
-
-(defn base-widget
-  ([state] (base-widget state (u!/uuid)))
-  ([state comm-id]
-   (let [{jup :jup req-msg :req-message} (state/current-context)
-         target "jupyter.widget"
-         sync-keys (set (keys state))]
-     (ca/create-and-insert jup req-msg target comm-id sync-keys state))))
 
 (defmacro capture* [w form]
   `(let [stdout# (new StringWriter)
