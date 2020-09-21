@@ -28,7 +28,7 @@ It uses the json to produce default value maps, widget names, specs and construc
 
 (def- PREDICATES {"bool" boolean?
                   "int" integer?
-                  "float" float?
+                  "float" #(or (float? %) (integer? %))
                   "string" string?
                   "bytes" bytes?
                   "Date" (constantly true)}) ;; Date is not yet implemented.
