@@ -9,7 +9,7 @@
                  [io.simplect/compose "0.7.27"]]
 
 
-  :profiles {:dev           {:plugins [[lein-metajar "0.1.2"]]}
+  :profiles {:dev           {:plugins [[org.clojars.nighcoder/lein-metajar "0.1.2"]]}
              :metajar       {:libdir "../lib"
                              :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}
 

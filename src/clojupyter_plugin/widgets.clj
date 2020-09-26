@@ -131,6 +131,8 @@ It uses the json to produce default value maps, widget names, specs and construc
                  (= "Model" (subs name (- (count name) 5) (count name)))))
     (csk/->kebab-case-symbol (subs name 0 (- (count name) 5)))))
 
+(declare layout)
+
 (defn make-widget
   "Returns a fn that builds and returns a widget of type defined by spec.
   spec is a map of attributes that define de widget."
@@ -143,6 +145,11 @@ It uses the json to produce default value maps, widget names, specs and construc
           valid-spec? (partial s/valid? full-k)
           base (ca/base-widget d-state)]
       (swap! base merge args)
+      (doseq [{name "name" widget "widget"} (get spec "attributes")]
+        (when (= name "layout")
+          (swap! base assoc :layout (layout)))
+        (when (= name "style")
+          (swap! base assoc :style ((ns-resolve 'clojupyter-plugin.widgets (csk/->kebab-case-symbol widget))))))
       (when (#{'dropdown 'radio-buttons 'select 'selection-slider 'selection-range-slider 'toggle-buttons 'select-multiple} w-name)
         (swap! base expand-options)
         (if (not= d-index (:index @base))

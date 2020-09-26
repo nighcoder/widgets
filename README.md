@@ -15,6 +15,8 @@ It acts as an atom, it can be used with `deref`, `swap!`, `reset!`, `compare-and
 The state is represented by a hash-map i.e. `{:min 0 :max 100 :value 20 ...}`.
 The attributes that get sent to the front-end must be converted to json so they can't contain nested keys, clojure functions or java classes as values.
 
+For more examples, check out the examples directory.
+
 ## Build
 ```bash
 $ lein metajar
