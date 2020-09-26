@@ -13,18 +13,18 @@ Param (
 ########################################################################################
 
 if (!$identity) {
-    $identity = "widgets-$(bin/version)"
+    $identity = "widgets-$(bin\version)"
 }
 
 $UserLibPath = "$env:LocalAppData\Programs"
 $SystemLibPath = "$env:ProgramFiles"
 
 if (Test-Path -PathType Container "$SystemLibPath\$kernel") {
-    $LibDir = Get-ChildItem "$SystemLibPath\$kernel"
+    $LibDir = "$SystemLibPath\$kernel"
 }
 
 if (Test-Path -PathType Container "$UserLibPath\$kernel") {
-    $LibDir = Get-ChildItem "$UserLibPath\$kernel"
+    $LibDir = "$UserLibPath\$kernel"
 }
 
 ########################################################################################
@@ -50,14 +50,15 @@ if (! $(Test-Path -PathType Leaf "target\plugins\$identity.jar")) {
 #  INSTALLING
 ########################################################################################
 
+Write-Host "Installing plugin $identity under $kernel"
 Copy-Item "target\plugins\$identity.jar" "$LibDir\plugins"
 
 foreach ($lib in @(Get-ChildItem "target\lib")) {
     if (! (Test-Path "$LibDir\lib\$lib")) {
-        Copy-Item $lib "$LibDir\lib"
+        Copy-Item $lib.FullName "$LibDir\lib"
     }
 }
 
 Push-Location "$LibDir\lib"
-New-Type -ItemType SymbolicLink -Path "$identity.jar" -Target "..\plugins\$identity.jar"
+New-Item -ItemType SymbolicLink -Path "$identity.jar" -Target "..\plugins\$identity.jar" | Out-Null
 Pop-Location

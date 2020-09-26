@@ -20,11 +20,11 @@ $UserLibPath = "$env:LocalAppData\Programs"
 $SystemLibPath = "$env:ProgramFiles"
 
 if (Test-Path -PathType Container "$SystemLibPath\$kernel") {
-    $LibDir = Get-ChildItem "$SystemLibPath\$kernel"
+    $LibDir = "$SystemLibPath\$kernel"
 }
 
 if (Test-Path -PathType Container "$UserLibPath\$kernel") {
-    $LibDir = Get-ChildItem "$UserLibPath\$kernel"
+    $LibDir = "$UserLibPath\$kernel"
 }
 
 ########################################################################################
@@ -38,7 +38,7 @@ if (!$LibDir) {
 
 if (! $(Test-Path -PathType Leaf "$LibDir\plugins\$identity.jar")) {
     Write-Error "Can't find $identity installed under $kernel"
-    exit 20
+    exit 30
 }
 
 ########################################################################################
@@ -74,33 +74,44 @@ function Get-Dependencies {
                     }
                 }
             }
-    foreach ($dep in $($deps -join '').split(" ")) {
-        $file = Get-ChildItem "$($jar.Directory)\$dep"
-        if ($file.target) {
-            Get-ChildItem $file.target
-        }
-        else {
-            $file
+    if ($deps) {
+        foreach ($dep in $($deps -join '').split(" ")) {
+            $file = Get-ChildItem "$($jar.Directory)\$dep"
+            if ($file.target) {
+                Get-ChildItem $file.target
+            }
+            else {
+                $file
+            }
         }
     }
 }
 
-$deps = Get-Dependencies $(Get-ChildItem "$LibDir\plugins\$identity.jar")
+$deps = Get-Dependencies $(Get-ChildItem "$LibDir\plugins\$identity.jar") |
+        Where-Object {! $_.Directory.Name -eq "plugins" }
 
 $other_deps = @()
 foreach ($jar in $(Get-ChildItem -Exclude "$identity.jar" "$LibDir\$kernel.jar", "$LibDir\plugins\*")) {
-    $other_deps += Get-Dependencies $jar
+    $dep = Get-Dependencies $jar
+    if ($dep -Contains "$LibDir\plugins\$identity.jar") {
+        Write-Error "Can't uninstall $identity bacause $($jar.Basename) depends on it."
+        exit 20
+    }
+    $other_deps += $dep
 }
-
-Write-Host $deps
-Write-Host $other_deps
-
-exit 120
 
 ########################################################################################
 #  UNINSTALLING
 ########################################################################################
 
 Remove-Item "$LibDir\plugins\$identity.jar"
-Remove-Item "$LibDir\plugins\enabled\$identity.jar" | Out-Null
-Remove-Item "$LibDir\lib\$identity"
+Remove-Item -ErrorAction SilentlyContinue "$LibDir\plugins\enabled\$identity.jar"
+Remove-Item "$LibDir\lib\$identity.jar"
+
+foreach ($dep in $deps) {
+    if (! $other_deps -Contains $dep) {
+        Write-Ouput "Removing dependency $($dep.Name)"
+        Remove-Item $dep
+    }
+}
+exit
