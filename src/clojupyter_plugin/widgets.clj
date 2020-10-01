@@ -138,7 +138,7 @@ It uses the json to produce default value maps, widget names, specs and construc
   spec is a map of attributes that define de widget."
   [spec]
   (fn constructor
-    [& {:as args}]
+    [& {w-layout :layout w-style :style :as args}]
     (let [{d-index :index :as d-state} (def-widget spec)
           w-name (widget-name spec)
           full-k (keyword "clojupyter-plugin.widgets" (str w-name))
@@ -146,9 +146,11 @@ It uses the json to produce default value maps, widget names, specs and construc
           base (ca/base-widget d-state)]
       (swap! base merge args)
       (doseq [{name "name" widget "widget"} (get spec "attributes")]
-        (when (= name "layout")
+        (when (and (= name "layout")
+                   (nil? w-layout))
           (swap! base assoc :layout (layout)))
-        (when (= name "style")
+        (when (and (= name "style")
+                   (nil? w-style))
           (swap! base assoc :style ((ns-resolve 'clojupyter-plugin.widgets (csk/->kebab-case-symbol widget))))))
       (when (#{'dropdown 'radio-buttons 'select 'selection-slider 'selection-range-slider 'toggle-buttons 'select-multiple} w-name)
         (swap! base expand-options)
