@@ -36,4 +36,7 @@ $ cd <clojupyter src dir>
 $ bin/enable-plugin -k <kernel identity> widgets
 ```
 To view and interact with the models, you also need to install the right extension for your front end.
-For **jupyter notebook** install **widgetsnbextension** plugin and for **jupyter lab** install **jupyterlab-manager** plugin.
+* **Jupyter Notebook** requires **widgetsnbextension** plugin
+* **Jupyter Lab** requires **jupyterlab-manager**.
+
+See detailed instructions [here](https://github.com/jupyter-widgets/ipywidgets/blob/master/docs/source/user_install.md#installation)
