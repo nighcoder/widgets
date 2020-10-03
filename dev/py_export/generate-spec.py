@@ -68,10 +68,6 @@ def trait_type(trait, widget_list):
                                                      widgets.Widget):
         w_type = 'reference'
         attributes['widget'] = trait.klass.__name__
-        # ADD the widget to this documenting list
-        if (trait.klass not in [i[1] for i in widget_list]
-                and trait.klass is not widgets.Widget):
-            widget_list.append((trait.klass.__name__, trait.klass))
     elif isinstance(trait, Any):
         # In our case, these all happen to be values that are converted to
         # strings
@@ -199,7 +195,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     format = args.format
 
-    widgets_to_document = sorted(widgets.Widget.widget_types.items())
+    widgets_to_document = sorted(w for w in widgets.Widget.widget_types.items() if w[-1].__name__ != '_Media')
     spec = create_spec(widgets_to_document)
     if format == 'json':
         print(json.dumps(spec, sort_keys=True))

@@ -12,9 +12,6 @@ It uses the json to produce default value maps, widget names, specs and construc
             [clojupyter.log :as log])
   (:import [java.io StringWriter]))
 
-(def WIDGET-TARGET "jupyter.widget")
-(def WIDGET-PROTOCOL-VERSION-MAJOR 2)
-(def WIDGET-PROTOCOL-VERSION-MINOR 0)
 (def- SPECS (-> "ipywidgets/schema/jupyterwidgetmodels.min.json"
                 io/resource
                 slurp
@@ -133,7 +130,7 @@ It uses the json to produce default value maps, widget names, specs and construc
 
 (declare layout)
 
-(defn make-widget
+(defn- make-widget
   "Returns a fn that builds and returns a widget of type defined by spec.
   spec is a map of attributes that define de widget."
   [spec]
