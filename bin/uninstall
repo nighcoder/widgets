@@ -16,7 +16,7 @@ SYSTEM_LIB_PATH=$(if [[ $(uname -s) == Darwin ]]; then
                   echo /usr/local/lib
               fi)
 
-IDENT=widgets-$($(dirname $0)/version)
+IDENT=widgets-$(bin/version)
 
 ########################################################################################
 # ARGUMENTS
