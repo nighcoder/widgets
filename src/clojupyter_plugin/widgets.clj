@@ -22,10 +22,13 @@ It uses the json to produce default value maps, widget names, specs and construc
 ;;----------------------------------------------------------------------------------------------
 ;; Predicates
 ;;----------------------------------------------------------------------------------------------
+(defn- float-or-int?
+  [val]
+  (or (float? val) (integer? val)))
 
 (def- PREDICATES {"bool" boolean?
                   "int" integer?
-                  "float" #(or (float? %) (integer? %))
+                  "float"float-or-int?
                   "string" string?
                   "bytes" bytes?
                   "Date" (constantly true)}) ;; Date is not yet implemented.
@@ -231,7 +234,7 @@ It uses the json to produce default value maps, widget names, specs and construc
                 ;; it can be a pair of ints, a pair of floats, or a pair of widget/trait_name
                 nil (cond
                       (= n 'float-range-slider)
-                      (eval `(s/def ~full-k ~(s/and (s/coll-of float? :kind vector? :count 2)
+                      (eval `(s/def ~full-k ~(s/and (s/coll-of float-or-int? :kind vector? :count 2)
                                                     (partial apply <=))))
 
                       (or (= n 'selection-range-slider)
