@@ -3,7 +3,7 @@
   :url "http://example.com/FIXME"
   :license {:name "MIT"}
 
-  :dependencies [[clojupyter "0.4.0"]
+  :dependencies [[clojupyter "0.4.1-rc1"]
                  [camel-snake-kebab "0.4.1"]
                  [cheshire "5.10.0"]
                  [io.simplect/compose "0.7.27"]]
