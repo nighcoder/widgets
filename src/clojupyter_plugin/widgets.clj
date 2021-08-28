@@ -160,10 +160,6 @@ It uses the json to produce default value maps, widget names, specs and construc
           (when (:value @base)
             (swap! base index-from-value)))
         (add-watch base :internal-consistency selection-watcher))
-      (when (= 'file-upload w-name)
-        (add-watch base :counter (fn [_ _ {counter :_counter} {new-data :data}]
-                                   (when (not (= counter (count new-data)))
-                                     (swap! base assoc :_counter (count new-data))))))
       (set-validator! base
         (condp contains? w-name
           #{'bounded-float-text 'bounded-int-text 'float-progress 'float-slider 'int-slider 'int-progress 'play}

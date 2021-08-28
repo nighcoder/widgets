@@ -1,9 +1,9 @@
 (defproject clojupyter-plugin/widgets "0.1.1-SNAPSHOT"
-  :description "Clojupyter plugin"
-  :url "http://example.com/FIXME"
+  :description "Interactive widgets for clojupyter."
+  :url "https://github.com/nighcoder/widgets"
   :license {:name "MIT"}
 
-  :dependencies [[clojupyter "0.4.1-rc1"]
+  :dependencies [[org.clojars.nighcoder/clojupyter "0.4.1"]
                  [camel-snake-kebab "0.4.1"]
                  [cheshire "5.10.0"]
                  [io.simplect/compose "0.7.27"]]
