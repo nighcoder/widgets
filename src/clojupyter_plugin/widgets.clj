@@ -12,7 +12,7 @@ It uses the json to produce default value maps, widget names, specs and construc
             [clojupyter.log :as log])
   (:import [java.io StringWriter]))
 
-(def- SPECS (-> "ipywidgets/schema/jupyterwidgetmodels.min.json"
+(def- SPECS (-> "ipywidgets/schema/jupyterwidgetmodels.json"
                 io/resource
                 slurp
                 json/parse-string))
