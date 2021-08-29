@@ -1,4 +1,4 @@
-(defproject clojupyter-plugin/widgets "0.1.1"
+(defproject org.clojars.nighcoder/widgets "0.1.1"
   :description "Interactive widgets for clojupyter."
   :url "https://github.com/nighcoder/widgets"
   :license {:name "MIT"}
